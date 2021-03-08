@@ -9,7 +9,11 @@ export default {
 		stats: {
 			type: Object,
 			default: () => {},
-		}
+		},
+		mods: {
+			type: Object,
+			default: () => {},
+		},
 	},
 };
 </script>
@@ -17,9 +21,9 @@ export default {
 <template>
 	<ul class="statistic">
 		<li class="statistic__item"
-				v-for="(stat, index) in stats"
+				v-for="(value, name, index) in stats"
 				:key="index">
-			<characteristic :stat="stat"/>
+			<characteristic :stat="value" :mod="mods[name]"/>
 		</li>
 	</ul>
 </template>
