@@ -1,11 +1,15 @@
 <script>
 import { DICE } from '@/constants';
 import CharacteristicOut from '@/components/Characteristics/CharacteristicOut';
+import RollResult from '@/components/RollResult/RollResult';
+import Combat from '@/components/Combat/Combat'
 
 export default {
   name: 'CharacterMain',
 	components: {
-		CharacteristicOut
+		CharacteristicOut,
+		RollResult,
+		Combat
 	},
 	data() {
   	return {
@@ -26,17 +30,11 @@ export default {
 				'char': { base: 0, minus: [], plus: [] },
 			},
 			BMA: [11, 6, 1],
-			currentAttack: 1,
+			currentAttack: 0,
 			health: {
   			total: 118,
 				current: 118,
 				buffed: 0,
-			},
-			currentWeapon: {
-  			title: '',
-				name: '',
-				damage: {},
-				multiplier: 1,
 			},
 			armorItem: [
 				{
@@ -57,12 +55,16 @@ export default {
 					title: 'isk-kosa-vampirizma',
 					name: 'Искусная коса вампиризма',
 					bonus: 2,
-					damage: { count: 4, dice: 4},
-					description: 'осстанавливает половину нанесенного урона',
+					damage: { count: 2, dice: 4 },
+					description: 'Восстанавливает половину нанесенного урона',
 					active: true,
 					multiplier: 1.5,
 				}
 			},
+			rollResults: null,
+			historyRoll: [],
+			rollType: '',
+			activeTab: 'combat',
 		}
 	},
 	computed: {
@@ -92,6 +94,15 @@ export default {
 				'wisdom': this._getModStat(wisdom.base) - this._arrSum(wisdom.minus) + this._arrSum(wisdom.plus),
 				'char': this._getModStat(char.base) - this._arrSum(char.minus) + this._arrSum(char.plus),
 			}
+		},
+		currentWeapon() {
+  		let item = {};
+			for (let i in this.weaponItem)
+				if(this.weaponItem[i].active === true) {
+					item = this.weaponItem[i];
+					break;
+				}
+			return item;
 		},
 	},
 	methods: {
@@ -145,17 +156,38 @@ export default {
 		checkHit() {
 			const roll = this.rollDice(20);
 			const mod = this.BMA[this.currentAttack] + this.modStatTotal.str;
-			const result = { value: roll.total + mod, rolls: roll.rolls, type: (roll.total === (20 || 1) ? 'crit' : 'normal')};
-			console.log('проверка попадания: ', result);
-			return result;
+			return {
+				value: roll.total + mod,
+				rolls: roll.rolls,
+				type: (roll.total === (20 || 1) ? 'crit' : 'normal'),
+				formula: `Результат кубика: (${roll.total})<br>
+									Модификатор силы: (${this.modStatTotal.str})<br>
+									Текущий БМА: (${this.BMA[this.currentAttack]})`,
+			};
 		},
 		checkDamage() {
-			this.currentWeapon = this.weaponItem.kosa;
-			const damage = this.rollDice(this.currentWeapon.damage.dice,  this.currentWeapon.damage.dice);
-			const result = Math.round(this.modStatTotal.str * this.currentWeapon.multiplier) + damage.total;
-			console.log(damage);
-			console.log(result);
-			return result;
+			const damage = this.rollDice(this.currentWeapon.damage.dice,  this.currentWeapon.damage.count);
+			return {
+				value: Math.round(this.modStatTotal.str * this.currentWeapon.multiplier) + damage.total,
+				formula: `Урон от оружия(${this.currentWeapon.damage.count}d${this.currentWeapon.damage.dice}): [${damage.rolls}] = <span style="color: red; font-size: 18px;">${damage.total}</span><br>
+									Модификатор силы (${this.modStatTotal.str} * ${this.currentWeapon.multiplier}): <span style="color: red; font-size: 18px;">${Math.round(this.modStatTotal.str * this.currentWeapon.multiplier)}</span>`
+			};
+		},
+		rollCheck(type = this.rollType) {
+			this.rollType = type;
+			switch (type) {
+				case 'hit': this.rollResults = this.checkHit();
+				break;
+				case 'damage': this.rollResults = this.checkDamage();
+				break;
+				default: this.rollResults = this.rollDice();
+				break
+			}
+		},
+		clearRollResult() {
+			this.historyRoll.push(this.rollResults);
+			this.rollResults = null;
+			this.rollType = '';
 		},
 	},
 }
@@ -164,9 +196,21 @@ export default {
 
 <template>
 	<div class="character">
-		<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
-		<el-button @click="checkHit">Проверка на попадание</el-button>
-		<el-button @click="checkDamage">Нанесение урона</el-button>
+		<el-tabs v-model="activeTab">
+			<el-tab-pane label="Характеристики" name="characteristics">
+						<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
+			</el-tab-pane>
+			<el-tab-pane label="Комбат роллы" name="combat">
+				<Combat @roll-check="rollCheck"/>
+			</el-tab-pane>
+<!--			<el-tab-pane label="Role" name="third">Role</el-tab-pane>-->
+<!--			<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>-->
+		</el-tabs>
+
+		<RollResult v-if="rollResults"
+								:rollResults="rollResults"
+								@reroll="rollCheck"
+								@close-dialog="clearRollResult"/>
 	</div>
 </template>
 
@@ -177,5 +221,4 @@ export default {
 		background-color: red;
 	}
 }
-
 </style>
