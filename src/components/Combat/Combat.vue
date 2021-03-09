@@ -2,9 +2,15 @@
 import ToggleAbility from '@/components/Combat/ToggleAbility';
 
 export default {
-	name: 'Combat.vue',
+	name: 'Combat',
 	components: {
 		ToggleAbility
+	},
+	props: {
+		combatAbilities: {
+			type: Array,
+			default: () => {},
+		},
 	},
 	data () {
 		return {};
@@ -21,7 +27,7 @@ export default {
 	<div>
 		<el-button @click="rollCheck('hit')">Проверка на попадание</el-button>
 		<el-button @click="rollCheck('damage')">Нанесение урона</el-button>
-		<ToggleAbility/>
+		<ToggleAbility :combatAbilities="combatAbilities"/>
 	</div>
 </template>
 

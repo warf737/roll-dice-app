@@ -2,7 +2,7 @@
 import { DICE } from '@/constants';
 import CharacteristicOut from '@/components/Characteristics/CharacteristicOut';
 import RollResult from '@/components/RollResult/RollResult';
-import Combat from '@/components/Combat/Combat'
+import Combat from '@/components/Combat/Combat';
 
 export default {
   name: 'CharacterMain',
@@ -20,36 +20,84 @@ export default {
 				'int': { base: 10, minus: [], plus: [], name: 'Интеллект', short_name: 'Инт' },
 				'wisdom': { base: 11, minus: [], plus: [], name: 'Мудрость', short_name: 'Мдр' },
 				'char': { base: 14, minus: [], plus: [], name: 'Харизма', short_name: 'Хар' },
-				},
+				}, // основные статы
 			modStat: {
 				'str': { base: 0, minus: [], plus: [] },
-				'lvk': { base: 0, minus: [], plus: [] },
+				'agl': { base: 0, minus: [], plus: [] },
 				'stm': { base: 0, minus: [], plus: [] },
 				'int': { base: 0, minus: [], plus: [] },
-				'mind': { base: 0, minus: [], plus: [] },
+				'wisdom': { base: 0, minus: [], plus: [] },
 				'char': { base: 0, minus: [], plus: [] },
+			}, // модификаторы
+			BMA: [11, 6, 1], // Базовый можификатор атаки
+			currentAttack: 0, // нужен для определения текущеего БМА
+			skillPoints: {
+  			multiplier: 4,
+				stat: 'int',
+  			description: '4 * модификатор Интеллекта за уровень'
 			},
-			BMA: [11, 6, 1],
-			currentAttack: 0,
+			classSkills: [
+				{
+					title: 'Акробатика',
+					mod: 'agl'
+				},
+				{
+					title: 'Верховая езда',
+					mod: 'agl'
+				},
+				{
+					title: 'Внимание',
+					mod: 'wisdom'
+				},
+				{
+					title: 'Выживание',
+					mod: 'wisdom'
+				},
+				{
+					title: 'Дрессировка',
+					mod: 'char'
+				},
+				{
+					title: 'Запугивание',
+					mod: 'char'
+				},
+				{
+					title: 'Знание природы',
+					mod: 'int'
+				},
+				{
+					title: 'Лазание',
+					mod: 'str'
+				},
+				{
+					title: 'Плавание',
+					mod: 'str'
+				},
+				{
+					title: 'Ремесло',
+					mod: 'int'
+				}
+			],
 			health: {
+  			hpPerLvl: { count: 1, dice: 12 },
   			total: 118,
 				current: 118,
 				buffed: 0,
-			},
-			armorItem: [
-				{
-					title: 'pojas-telesnogo-sovershenstva',
-					name: 'Пояс небесного совершенства',
-					bonus: 2,
-					plus: [
-						{'str': 1},
-						{'agl': 1},
-						{'stm': 1}
-					],
-					minus: [],
-					active: true,
-				},
-			],
+			}, // здоровье
+			// armorItem: [
+			// 	{
+			// 		title: 'pojas-telesnogo-sovershenstva',
+			// 		name: 'Пояс небесного совершенства',
+			// 		bonus: 2,
+			// 		plus: [
+			// 			{'str': 1},
+			// 			{'agl': 1},
+			// 			{'stm': 1}
+			// 		],
+			// 		minus: [],
+			// 		active: true,
+			// 	},
+			// ],
 			weaponItem: {
 				kosa: {
 					title: 'isk-kosa-vampirizma',
@@ -60,12 +108,68 @@ export default {
 					active: true,
 					multiplier: 1.5,
 				}
-			},
-			rollResults: null,
-			historyRoll: [],
-			rollType: '',
-			activeTab: 'combat',
-		}
+			}, // снаряженное оружие
+			rollResults: null, // результат броска кубика для прередачи в другие компоненты
+			historyRoll: [], // история всех роллов todo добавить добавление роллов в историю
+			rollType: '', // тип ролла в открытой модалке, нужен в реролле, чтобы понять какой из роллов использовать - для атаки или попадания
+			activeTab: 'combat', // дефолтное значение открытой вкладки
+			abilities: {
+					'Ярость': {
+						title: 'Бешеная ярость',
+						count: '4 + модификатор выносливости',
+						active: true,
+						display: true,
+						description: 'Сила: +6, Выносливость: +6, Воля: +3, КБ: -2',
+						bonus: {
+							str: 6,
+							stm: 6,
+							will: 3,
+							armory: -2,
+						},
+						rageGifts: [
+							{
+								title: 'Могучий удар',
+								description: '1 + 1 за каждые 4 уровня персонажа к проверке урона. Может использоваться только один раз за приступ ярости',
+								display: true,
+								active: true,
+							},
+							{
+								title: 'Восстановление сил',
+								description: 'Основное действие. Восстановить 2d8 здоровья один раз в день',
+								display: true,
+								active: false,
+							},
+							{
+								title: 'Устрашающий взгляд',
+								description: 'Проверка запугивания врагов на соседней клетке',
+								display: false,
+								active: true,
+							},
+							{
+								title: 'Ужасный вой',
+								description: 'Все в радиусе 30 футов должны пройти испытание Воли (10 + 0,5 * лвл + модификатор Силы)',
+								display: false,
+								active: true,
+							},
+							{
+								title:'Снижение урона',
+								description: 'Снижение урона на 1',
+								display: false,
+								active: false,
+							},
+						],
+					},
+					'Расовые': {
+						'Обнаружение яда': { description: 'Обнаружение яда'},
+						'Очищение еды и питья': { description: 'Очищение еды и питья'},
+						'Горькоцвет': { description: 'Возможность отращивать светящийся цветок на любой части тела'},
+						'Вкусный': { description: 'Штраф к уклонениям после уккуса противником'},
+						'Зависимость от света': { description: 'При отсутсвии солнечного света завядаешь'},
+						'Семечко': { description: 'Можешь пересадить из себя семечко, умереть и переродиться'},
+
+					}
+				},
+			}
 	},
 	computed: {
   	dice() {
@@ -103,6 +207,10 @@ export default {
 					break;
 				}
 			return item;
+		},
+		combatAbilities() {
+  		const { title, description, rageGifts, active, display  } =  this.abilities['Ярость'];
+			return [...rageGifts, { title, description, active, display }].filter(ability => ability.display);
 		},
 	},
 	methods: {
@@ -201,7 +309,8 @@ export default {
 						<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
 			</el-tab-pane>
 			<el-tab-pane label="Комбат роллы" name="combat">
-				<Combat @roll-check="rollCheck"/>
+				<combat :combatAbilities="combatAbilities"
+								@roll-check="rollCheck"/>
 			</el-tab-pane>
 <!--			<el-tab-pane label="Role" name="third">Role</el-tab-pane>-->
 <!--			<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>-->
