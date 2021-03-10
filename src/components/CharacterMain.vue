@@ -21,14 +21,6 @@ export default {
 				'wisdom': { base: 11, minus: [], plus: [], name: 'Мудрость', short_name: 'Мдр' },
 				'char': { base: 14, minus: [], plus: [], name: 'Харизма', short_name: 'Хар' },
 				}, // основные статы
-			modStat: {
-				'str': { base: 0, minus: [], plus: [] },
-				'agl': { base: 0, minus: [], plus: [] },
-				'stm': { base: 0, minus: [], plus: [] },
-				'int': { base: 0, minus: [], plus: [] },
-				'wisdom': { base: 0, minus: [], plus: [] },
-				'char': { base: 0, minus: [], plus: [] },
-			}, // модификаторы
 			BMA: [11, 6, 1], // Базовый можификатор атаки
 			currentAttack: 0, // нужен для определения текущеего БМА
 			skillPoints: {
@@ -117,45 +109,39 @@ export default {
 					'Ярость': {
 						title: 'Бешеная ярость',
 						count: '4 + модификатор выносливости',
-						active: true,
+						active: false,
 						display: true,
 						description: 'Сила: +6, Выносливость: +6, Воля: +3, КБ: -2',
-						bonus: {
-							str: 6,
-							stm: 6,
-							will: 3,
-							armory: -2,
-						},
 						rageGifts: [
 							{
 								title: 'Могучий удар',
 								description: '1 + 1 за каждые 4 уровня персонажа к проверке урона. Может использоваться только один раз за приступ ярости',
 								display: true,
-								active: true,
+								active: false,
 							},
 							{
 								title: 'Восстановление сил',
 								description: 'Основное действие. Восстановить 2d8 здоровья один раз в день',
 								display: true,
-								active: false,
+								active: false
 							},
 							{
 								title: 'Устрашающий взгляд',
 								description: 'Проверка запугивания врагов на соседней клетке',
 								display: false,
-								active: true,
+								active: false
 							},
 							{
 								title: 'Ужасный вой',
 								description: 'Все в радиусе 30 футов должны пройти испытание Воли (10 + 0,5 * лвл + модификатор Силы)',
 								display: false,
-								active: true,
+								active: false
 							},
 							{
 								title:'Снижение урона',
 								description: 'Снижение урона на 1',
 								display: false,
-								active: false,
+								active: true,
 							},
 						],
 					},
@@ -188,15 +174,18 @@ export default {
 			}
 		},
 		modStatTotal() {
-			const { str, agl, stm, int, wisdom, char } = this.mainStat;
+			const { str, agl, stm, int, wisdom, char } = this.mainStatTotal;
+			const _getModStat = (stat) => {
+				return Math.floor((stat-10)/2);
+			};
 			// todo переделать в цикл
 			return {
-				'str': this._getModStat(str.base) - this._arrSum(str.minus) + this._arrSum(str.plus),
-				'agl': this._getModStat(agl.base) - this._arrSum(agl.minus) + this._arrSum(agl.plus),
-				'stm': this._getModStat(stm.base) - this._arrSum(stm.minus) + this._arrSum(stm.plus),
-				'int': this._getModStat(int.base) - this._arrSum(int.minus) + this._arrSum(int.plus),
-				'wisdom': this._getModStat(wisdom.base) - this._arrSum(wisdom.minus) + this._arrSum(wisdom.plus),
-				'char': this._getModStat(char.base) - this._arrSum(char.minus) + this._arrSum(char.plus),
+				'str': _getModStat(str.value),
+				'agl': _getModStat(agl.value),
+				'stm': _getModStat(stm.value),
+				'int': _getModStat(int.value),
+				'wisdom': _getModStat(wisdom.value),
+				'char': _getModStat(char.value),
 			}
 		},
 		currentWeapon() {
@@ -214,9 +203,6 @@ export default {
 		},
 	},
 	methods: {
-		_getModStat(stat) {
-			return Math.floor((stat-10)/2);
-		},
 
 		/**
 		 * Получаем случайное число из диапазона,
@@ -260,7 +246,6 @@ export default {
 				total: total,
 			};
 		},
-
 		checkHit() {
 			const roll = this.rollDice(20);
 			const mod = this.BMA[this.currentAttack] + this.modStatTotal.str;
@@ -297,6 +282,24 @@ export default {
 			this.rollResults = null;
 			this.rollType = '';
 		},
+
+		transferBonuses(bonus) {
+			console.log(bonus);
+			switch (bonus) {
+				case 'Бешеная ярость':
+					this.abilities['Ярость'].active = !this.abilities['Ярость'].active;
+					if (this.abilities['Ярость'].active) {
+						this.mainStat.str.plus.push(6);
+						this.mainStat.stm.plus.push(6);
+						// todo добавить проверку Воли +3 и штраф КБ -2
+					} else {
+						this.mainStat.str.plus.splice(this.mainStat.str.plus.findIndex(item => item === 6), 1);
+						this.mainStat.stm.plus.splice(this.mainStat.stm.plus.findIndex(item => item === 6), 1);
+					}
+				default:
+					break;
+			}
+		},
 	},
 }
 </script>
@@ -304,17 +307,21 @@ export default {
 
 <template>
 	<div class="character">
-		<el-tabs v-model="activeTab">
-			<el-tab-pane label="Характеристики" name="characteristics">
-						<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
-			</el-tab-pane>
-			<el-tab-pane label="Комбат роллы" name="combat">
-				<combat :combatAbilities="combatAbilities"
-								@roll-check="rollCheck"/>
-			</el-tab-pane>
-<!--			<el-tab-pane label="Role" name="third">Role</el-tab-pane>-->
-<!--			<el-tab-pane label="Task" name="fourth">Task</el-tab-pane>-->
-		</el-tabs>
+<!--		<el-tabs v-model="activeTab">-->
+<!--			<el-tab-pane label="Характеристики" name="characteristics">-->
+<!--						<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>-->
+<!--			</el-tab-pane>-->
+<!--			<el-tab-pane label="Комбат роллы" name="combat">-->
+<!--				<combat :combatAbilities="combatAbilities"-->
+<!--								@roll-check="rollCheck"-->
+<!--								@transfer-bonuses="transferBonuses"/>-->
+<!--			</el-tab-pane>-->
+<!--		</el-tabs>-->
+
+		<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
+		<combat :combatAbilities="combatAbilities"
+											@roll-check="rollCheck"
+											@transfer-bonuses="transferBonuses"/>
 
 		<RollResult v-if="rollResults"
 								:rollResults="rollResults"
