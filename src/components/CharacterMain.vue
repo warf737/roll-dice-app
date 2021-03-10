@@ -157,6 +157,7 @@ export default {
 					}
 				},
 			hitBonuses: 0,
+			armoryClass: 30,
 			}
 	},
 	computed: {
@@ -167,9 +168,9 @@ export default {
 			const { str, agl, stm, int, wisdom, char } = this.mainStat;
 			// todo переделать в цикл
   		return {
-				'str': { value: str.base - this._arrSum(str.minus) + this._arrSum(str.plus), name: str.name, short_name: str.short_name},
-				'agl': { value: agl.base - this._arrSum(agl.minus) + this._arrSum(agl.plus), name: agl.name, short_name: agl.short_name},
-				'stm': { value: stm.base - this._arrSum(stm.minus) + this._arrSum(stm.plus), name: stm.name, short_name: stm.short_name},
+				'str': { value: str.base - this._arrSum(str.minus) + this._arrSum(str.plus) + 2, name: str.name, short_name: str.short_name},
+				'agl': { value: agl.base - this._arrSum(agl.minus) + this._arrSum(agl.plus) + 2, name: agl.name, short_name: agl.short_name},
+				'stm': { value: stm.base - this._arrSum(stm.minus) + this._arrSum(stm.plus) + 2, name: stm.name, short_name: stm.short_name},
 				'int': { value: int.base - this._arrSum(int.minus) + this._arrSum(int.plus), name: int.name, short_name: int.short_name},
 				'wisdom': { value: wisdom.base - this._arrSum(wisdom.minus) + this._arrSum(wisdom.plus), name: wisdom.name, short_name: wisdom.short_name},
 				'char': { value: char.base - this._arrSum(char.minus) + this._arrSum(char.plus), name: char.name, short_name: char.short_name},
@@ -304,6 +305,7 @@ export default {
 					if (this.abilities['Ярость'].active) {
 						this.mainStat.str.plus.push(6);
 						this.mainStat.stm.plus.push(6);
+						this.armoryClass -= 2;
 						// todo добавить проверку Воли +3 и штраф КБ -2
 					} else {
 						this.mainStat.str.plus.splice(this.mainStat.str.plus.findIndex(item => item === 6), 1);
@@ -348,7 +350,9 @@ export default {
 <!--			</el-tab-pane>-->
 <!--		</el-tabs>-->
 
-		<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
+		<characteristic-out :stats="mainStatTotal"
+												:mods="modStatTotal"
+												:armory="armoryClass"/>
 		<combat :combatAbilities="combatAbilities"
 											@roll-check="rollCheck"
 											@transfer-bonuses="transferBonuses"

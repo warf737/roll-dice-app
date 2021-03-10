@@ -14,6 +14,10 @@ export default {
 			type: Object,
 			default: () => {},
 		},
+		armory: {
+			type: Number,
+			default: 0,
+		}
 	},
 };
 </script>
@@ -25,6 +29,7 @@ export default {
 				:key="index">
 			<characteristic :stat="value" :mod="mods[name]"/>
 		</li>
+		<span>КБ: {{ armory }}</span>
 	</ul>
 </template>
 

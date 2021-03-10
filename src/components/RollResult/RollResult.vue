@@ -35,8 +35,9 @@ export default {
 			title="Результат броска"
 			width="30%"
 			@close="closeDialog">
-		<span  class="roll__total">{{ rollResults.value }}</span>
-
+		<span  class="roll__total"
+					 :class="{'crit' : rollResults.type === 'crit'}"
+		>{{ rollResults.value }}</span>
 		<span class="roll__details" v-html="rollResults.formula"/>
 
 		<span slot="footer" class="dialog-footer">
@@ -52,7 +53,8 @@ export default {
 	&__total {
 		//margin-right: 10px;
 		text-align: center;
-		font-size: 36px;
+		font-size: 54px;
+		text-shadow: 1px 1px 2px black, 0 0 4em red;
 	}
 }
 </style>
@@ -61,5 +63,13 @@ export default {
 .el-dialog__body {
 	display: flex;
 	flex-direction: column;
+}
+</style>
+
+<style lang="scss" scoped>
+.crit {
+	color: red;
+	font-size: 72px;
+	text-shadow: 1px 1px 2px black, 0 0 10px red;
 }
 </style>
