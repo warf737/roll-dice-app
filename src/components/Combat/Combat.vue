@@ -1,10 +1,9 @@
 <script>
-import ToggleAbility from '@/components/Combat/ToggleAbility';
+
 
 export default {
 	name: 'Combat',
 	components: {
-		ToggleAbility
 	},
 	props: {
 		combatAbilities: {
@@ -46,7 +45,7 @@ export default {
 		<el-button @click="rollCheck('damage')">Нанесение урона</el-button>
 
 		<section>
-			<div class="combat__bma-wrapper">
+			<div class="combat__bma-wrapper" @change="changeAttackNumber">
 			<span>БМА: </span>
 			<el-radio-group v-model="currentAttack" >
 				<el-radio :label="0" border size="small">11</el-radio>

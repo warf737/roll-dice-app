@@ -22,7 +22,6 @@ export default {
 			this.$emit('reroll');
 		},
 		closeDialog() {
-			console.log('1');
 			this.$emit('close-dialog');
 		},
 	},

@@ -13,6 +13,7 @@ export default {
 	},
 	data() {
   	return {
+			currentLvl: 11,
   		mainStat: {
 				'str': { base: 20, minus: [], plus: [], name: 'Сила', short_name: 'Сил' },
 				'agl': { base: 16, minus: [], plus: [], name: 'Ловкость', short_name: 'Лвк' },
@@ -155,6 +156,7 @@ export default {
 
 					}
 				},
+			hitBonuses: 0,
 			}
 	},
 	computed: {
@@ -199,11 +201,10 @@ export default {
 		},
 		combatAbilities() {
   		const { title, description, rageGifts, active, display  } =  this.abilities['Ярость'];
-			return [...rageGifts, { title, description, active, display }].filter(ability => ability.display);
+			return [...rageGifts, { title, description, active, display }].filter(ability => ability.display).reverse();
 		},
 	},
 	methods: {
-
 		/**
 		 * Получаем случайное число из диапазона,
 		 */
@@ -212,7 +213,6 @@ export default {
 			const upper = Math.floor(Math.max(min, max));
 			return Math.floor(lower + Math.random() * (upper - lower + 1));
 		},
-
 		/**
 		 * Складываем все элементы переданного массива
 		 * @param arr
@@ -226,7 +226,6 @@ export default {
 			}
 			return total;
 		},
-
 		/**
 		 * Кидаем дайсы
 		 * @param dice
@@ -248,14 +247,15 @@ export default {
 		},
 		checkHit() {
 			const roll = this.rollDice(20);
-			const mod = this.BMA[this.currentAttack] + this.modStatTotal.str;
+			const mod = this.BMA[this.currentAttack] + this.modStatTotal.str + this.hitBonuses;
 			return {
 				value: roll.total + mod,
 				rolls: roll.rolls,
 				type: (roll.total === (20 || 1) ? 'crit' : 'normal'),
-				formula: `Результат кубика: (${roll.total})<br>
-									Модификатор силы: (${this.modStatTotal.str})<br>
-									Текущий БМА: (${this.BMA[this.currentAttack]})`,
+				formula: `Результат кубика: ${ roll.total }<br>
+									Модификатор силы: ${ this.modStatTotal.str }<br>
+									Текущий БМА: ${ this.BMA[this.currentAttack] }<br>
+									Бонус к попаданию: ${ this.hitBonuses }`,
 			};
 		},
 		checkDamage() {
@@ -266,13 +266,22 @@ export default {
 									Модификатор силы (${this.modStatTotal.str} * ${this.currentWeapon.multiplier}): <span style="color: red; font-size: 18px;">${Math.round(this.modStatTotal.str * this.currentWeapon.multiplier)}</span>`
 			};
 		},
+		checkHeal() {
+			const roll = this.rollDice(8,2);
+			return {
+				value: roll.total,
+				formula: `Броски: ${roll.rolls}`
+			};
+		},
 		rollCheck(type = this.rollType) {
+			console.log(type);
 			this.rollType = type;
 			switch (type) {
 				case 'hit': this.rollResults = this.checkHit();
 				break;
 				case 'damage': this.rollResults = this.checkDamage();
 				break;
+				case 'heal': this.rollResults = this.checkHeal();
 				default: this.rollResults = this.rollDice();
 				break
 			}
@@ -282,10 +291,14 @@ export default {
 			this.rollResults = null;
 			this.rollType = '';
 		},
-
+		changeAttack(attack) {
+			this.currentAttack = attack;
+			console.log('.', attack);
+		},
 		transferBonuses(bonus) {
 			console.log(bonus);
 			switch (bonus) {
+
 				case 'Бешеная ярость':
 					this.abilities['Ярость'].active = !this.abilities['Ярость'].active;
 					if (this.abilities['Ярость'].active) {
@@ -296,6 +309,23 @@ export default {
 						this.mainStat.str.plus.splice(this.mainStat.str.plus.findIndex(item => item === 6), 1);
 						this.mainStat.stm.plus.splice(this.mainStat.stm.plus.findIndex(item => item === 6), 1);
 					}
+				break;
+
+				case 'Могучий удар':
+					let bonk = this.abilities['Ярость'].rageGifts.find(gift => gift.title === 'Могучий удар');
+					console.log(bonk);
+					bonk.active = !bonk.active;
+
+					if(bonk.active) {
+						this.hitBonuses += 1 + Math.floor(this.currentLvl / 4);
+					} else {
+						this.hitBonuses -= 1 + Math.floor(this.currentLvl / 4);
+					}
+					break;
+
+				case 'Восстановление сил':
+					this.rollCheck('heal');
+					break;
 				default:
 					break;
 			}
@@ -321,7 +351,8 @@ export default {
 		<characteristic-out :stats="mainStatTotal" :mods="modStatTotal"/>
 		<combat :combatAbilities="combatAbilities"
 											@roll-check="rollCheck"
-											@transfer-bonuses="transferBonuses"/>
+											@transfer-bonuses="transferBonuses"
+											@change-attack-number="changeAttack"/>
 
 		<RollResult v-if="rollResults"
 								:rollResults="rollResults"
