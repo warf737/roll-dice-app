@@ -35,7 +35,7 @@ html {
 }
 
 body {
-	width: auto;
+	width: 1024px;
 	margin: 0 auto;
 	font-size: 16px;
 	font-family: Avenir, Helvetica, Arial, sans-serif;

@@ -19,7 +19,9 @@ export default {
 	},
 	methods: {
 		isDisabled(ability) {
-			if(ability.title === 'Бешеная ярость') {
+			if (ability.title === 'Бешеная ярость' ||
+					ability.title ==='Сокрушительный удар' ||
+					ability.title ==='Жестокий удар+') {
 				return false;
 			} else {
 				const rageIsActive = this.combatAbilities.find(ability => ability.title === 'Бешеная ярость').active;

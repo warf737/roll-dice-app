@@ -29,20 +29,23 @@ export default {
 </script>
 
 <template>
-	<el-dialog
-			class="roll__wrapper"
-			:visible="isVisible"
-			title="Результат броска"
-			width="30%"
-			@close="closeDialog">
+	<el-dialog class="roll__wrapper"
+						 :visible="isVisible"
+						 title="Результат броска"
+						 width="30%"
+						 @close="closeDialog">
 		<span  class="roll__total"
-					 :class="{'crit' : rollResults.type === 'crit'}"
-		>{{ rollResults.value }}</span>
-		<span class="roll__details" v-html="rollResults.formula"/>
+					 :class="{'crit' : rollResults.type === 'crit'}">
+			{{ rollResults.value }}
+		</span>
+		<span class="roll__details"
+					v-html="rollResults.formula"/>
 
-		<span slot="footer" class="dialog-footer">
+		<span slot="footer"
+					class="dialog-footer">
     <el-button @click="rerollDice">Reroll</el-button>
-    <el-button type="primary" @click="closeDialog">Close</el-button>
+    <el-button type="primary"
+							 @click="closeDialog">Close</el-button>
   </span>
 	</el-dialog>
 </template>
@@ -51,10 +54,9 @@ export default {
 
 .roll {
 	&__total {
-		//margin-right: 10px;
 		text-align: center;
 		font-size: 54px;
-		text-shadow: 1px 1px 2px black, 0 0 4em red;
+		text-shadow: 1px 1px 2px black, 0 0 4em;
 	}
 }
 </style>

@@ -156,8 +156,24 @@ export default {
 
 					}
 				},
+			features: {
+				'Сокрушительный удар': {
+					title: 'Сокрушительный удар',
+					active: false,
+					display: true,
+					description: '-3 к попаданию, +5 к урону',
+				},
+				'Жестокий удар+': {
+					title: 'Жестокий удар+',
+					active: false,
+					display: true,
+					description: 'Тройной базовый урон одной атакой',
+				},
+			},
 			hitBonuses: 0,
+			damageBonus: 0,
 			armoryClass: 30,
+			multiplierDamage: 1,
 			}
 	},
 	computed: {
@@ -201,8 +217,15 @@ export default {
 			return item;
 		},
 		combatAbilities() {
-  		const { title, description, rageGifts, active, display  } =  this.abilities['Ярость'];
-			return [...rageGifts, { title, description, active, display }].filter(ability => ability.display).reverse();
+  		const { title: rageTitle, description: rageDescription, rageGifts, active: rageActive, display: rageDisplay  } =  this.abilities['Ярость'];
+  		const { title: crushingBonkTitle, description: crushingBonkDescription, active: crushingBonkActive, display: crushingBonkDisplay  } =  this.features['Сокрушительный удар'];
+  		const { title: cruelBonkTitle, description: cruelBonkDescription, active: cruelBonkActive, display: cruelBonkDisplay  } =  this.features['Жестокий удар+'];
+			return [
+					...rageGifts,
+					{ title: rageTitle, description: rageDescription, active: rageActive, display: rageDisplay },
+					{ title: crushingBonkTitle, description: crushingBonkDescription, active: crushingBonkActive, display: crushingBonkDisplay },
+					{ title: cruelBonkTitle, description: cruelBonkDescription, active: cruelBonkActive, display: cruelBonkDisplay }
+					].filter(ability => ability.display).reverse();
 		},
 	},
 	methods: {
@@ -260,11 +283,12 @@ export default {
 			};
 		},
 		checkDamage() {
-			const damage = this.rollDice(this.currentWeapon.damage.dice,  this.currentWeapon.damage.count);
+			const damage = this.rollDice(this.currentWeapon.damage.dice,  this.currentWeapon.damage.count * this.multiplierDamage);
 			return {
-				value: Math.round(this.modStatTotal.str * this.currentWeapon.multiplier) + damage.total,
+				value: Math.round(this.modStatTotal.str * this.currentWeapon.multiplier) + damage.total + this.damageBonus,
 				formula: `Урон от оружия(${this.currentWeapon.damage.count}d${this.currentWeapon.damage.dice}): [${damage.rolls}] = <span style="color: red; font-size: 18px;">${damage.total}</span><br>
-									Модификатор силы (${this.modStatTotal.str} * ${this.currentWeapon.multiplier}): <span style="color: red; font-size: 18px;">${Math.round(this.modStatTotal.str * this.currentWeapon.multiplier)}</span>`
+									Модификатор силы (${this.modStatTotal.str} * ${this.currentWeapon.multiplier}): <span style="color: red; font-size: 18px;">${Math.round(this.modStatTotal.str * this.currentWeapon.multiplier)}</span><br>
+									Бонус урона: ${this.damageBonus}`
 			};
 		},
 		checkHeal() {
@@ -283,6 +307,8 @@ export default {
 				case 'damage': this.rollResults = this.checkDamage();
 				break;
 				case 'heal': this.rollResults = this.checkHeal();
+				break;
+
 				default: this.rollResults = this.rollDice();
 				break
 			}
@@ -319,15 +345,37 @@ export default {
 					bonk.active = !bonk.active;
 
 					if(bonk.active) {
-						this.hitBonuses += 1 + Math.floor(this.currentLvl / 4);
+						this.damageBonus += 1 + Math.floor(this.currentLvl / 4);
 					} else {
-						this.hitBonuses -= 1 + Math.floor(this.currentLvl / 4);
+						this.damageBonus -= 1 + Math.floor(this.currentLvl / 4);
 					}
 					break;
 
 				case 'Восстановление сил':
 					this.rollCheck('heal');
 					break;
+
+				case 'Жестокий удар+':
+					this.features['Жестокий удар+'].active = !this.features['Жестокий удар+'].active;
+					if (this.features['Жестокий удар+'].active) {
+						this.multiplierDamage *= 3;
+					} else {
+						this.multiplierDamage /= 3;
+					}
+					break;
+
+				case 'Сокрушительный удар':
+					this.features['Сокрушительный удар'].active = !this.features['Сокрушительный удар'].active;
+					if (this.features['Сокрушительный удар'].active) {
+
+						this.hitBonuses -= (1 + Math.floor(this.BMA[this.currentAttack] / 4));
+						this.damageBonus += 2 * 1.5 +  2 * 1.5 * Math.floor(this.BMA[this.currentAttack] / 4);
+
+					} else {
+						this.hitBonuses += (1 + Math.floor(this.BMA[this.currentAttack] / 4));
+						this.damageBonus -= 2 * 1.5 +  2 * 1.5 * Math.floor(this.BMA[this.currentAttack] / 4);
+					}
+				break;
 				default:
 					break;
 			}
@@ -369,7 +417,9 @@ export default {
 
 @media #{"(max-width: 768px)"} {
 	.character {
-		background-color: red;
+		margin: 35px 50px 0 25px;
+		display: flex;
+		flex-direction: column;
 	}
 }
 </style>
