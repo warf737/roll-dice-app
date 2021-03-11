@@ -62,6 +62,12 @@ export default {
 </style>
 
 <style lang="scss">
+@media #{"(max-width: 376px)"} {
+	.el-dialog__wrapper .el-dialog {
+		width: 70% !important;
+	}
+}
+
 .el-dialog__body {
 	display: flex;
 	flex-direction: column;
