@@ -42,11 +42,9 @@ export default {
 </script>
 
 <template>
-	<div>
-		<el-button @click="rollCheck('hit')">Проверка на попадание</el-button>
-		<el-button @click="rollCheck('damage')">Нанесение урона</el-button>
+	<section class="combat">
 
-		<section>
+		<div class="combat__mod">
 			<div class="combat__bma-wrapper" @change="changeAttackNumber">
 			<span>БМА: </span>
 			<el-radio-group v-model="currentAttack" >
@@ -57,7 +55,8 @@ export default {
 			</div>
 
 			<el-checkbox-group v-model="activeBonuses" size="mini">
-				<el-checkbox-button v-for="(ability, index) in combatAbilities"
+				<el-checkbox-button class="combat__mod-button"
+														v-for="(ability, index) in combatAbilities"
 														:label="ability.title"
 														:key="index"
 														:disabled="isDisabled(ability)"
@@ -65,8 +64,12 @@ export default {
 					<span>{{ ability.title }}</span>
 				</el-checkbox-button>
 			</el-checkbox-group>
-		</section>
-	</div>
+		</div>
+
+		<el-button @click="rollCheck('hit')">Проверка на попадание</el-button>
+		<el-button @click="rollCheck('damage')">Нанесение урона</el-button>
+
+	</section>
 </template>
 
 <style lang="scss">
@@ -92,10 +95,21 @@ export default {
 
 <style scoped lang="scss">
 .combat {
+	margin-top: 10px;
+
 	&__bma-wrapper {
 		display: flex;
 		flex-direction: column;
 		width: 250px;
+		margin: 10px 0;
+	}
+
+	&__mod {
+		margin-bottom: 10px;
+	}
+
+	&__mod-button{
+		margin: 2px 0;
 	}
 }
 </style>

@@ -30,7 +30,6 @@ export default {
 
 <style lang="scss" scoped>
 .item {
-	display: flex;
 
 	&__body {
 		display: flex;

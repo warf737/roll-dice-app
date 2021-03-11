@@ -29,7 +29,7 @@ export default {
 				:key="index">
 			<characteristic :stat="value" :mod="mods[name]"/>
 		</li>
-		<span>КБ: {{ armory }}</span>
+		<span class="item">КБ: {{ armory }}</span>
 	</ul>
 </template>
 
@@ -37,8 +37,8 @@ export default {
 .statistic {
 		display: flex;
 		flex-direction: column;
-	&__item {
-		//display: flex;
-	}
+}
+.item {
+	margin: 3px 0;
 }
 </style>

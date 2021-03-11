@@ -415,9 +415,12 @@ export default {
 
 <style scoped lang="scss">
 
-@media #{"(max-width: 376px)"} {
+.character {
+	margin: 35px 50px 0 25px;
+}
+@media #{"(min-width: 376px)"} {
 	.character {
-		margin: 35px 50px 0 25px;
+
 		display: flex;
 		flex-direction: column;
 	}

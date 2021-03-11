@@ -64,7 +64,23 @@ export default {
 <style lang="scss">
 @media #{"(max-width: 376px)"} {
 	.el-dialog__wrapper .el-dialog {
-		width: 70% !important;
+		width: 80% !important;
+	}
+}
+@media #{"(max-width: 550px)"} {
+	.el-dialog__wrapper .el-dialog {
+		width: 60% !important;
+	}
+}
+@media #{"(max-width: 650px)"} {
+	.el-dialog__wrapper .el-dialog {
+		width: 50% !important;
+	}
+}
+
+@media #{"(min-width: 768px)"} {
+	.el-dialog__wrapper .el-dialog {
+		width: 40% !important;
 	}
 }
 
