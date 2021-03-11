@@ -275,7 +275,7 @@ export default {
 			return {
 				value: roll.total + mod,
 				rolls: roll.rolls,
-				type: (roll.total === (20 || 1) ? 'crit' : 'normal'),
+				type: ((roll.total === 20 || roll.total ===1) ? 'crit' : 'normal'),
 				formula: `Результат кубика: ${ roll.total }<br>
 									Модификатор силы: ${ this.modStatTotal.str }<br>
 									Текущий БМА: ${ this.BMA[this.currentAttack] }<br>
