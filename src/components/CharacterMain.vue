@@ -332,7 +332,7 @@ export default {
 						this.mainStat.str.plus.push(6);
 						this.mainStat.stm.plus.push(6);
 						this.armoryClass -= 2;
-						// todo добавить проверку Воли +3 и штраф КБ -2
+						// todo добавить проверку Воли +3
 					} else {
 						this.mainStat.str.plus.splice(this.mainStat.str.plus.findIndex(item => item === 6), 1);
 						this.mainStat.stm.plus.splice(this.mainStat.stm.plus.findIndex(item => item === 6), 1);
